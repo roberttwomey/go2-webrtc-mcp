@@ -11,14 +11,17 @@ A simple Model Context Protocol (MCP) server that enables natural language contr
 - **Natural Language Control**: Execute robot commands using simple English phrases
 - **MCP Integration**: Seamlessly integrates with MCP-compatible AI assistants
 - **Safety Features**: Auto-zero velocity after movement commands
+- **Conda Environment Support**: Optional conda environment for dependency isolation
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- Python 3.8 or higher (or conda for environment management)
 - Unitree Go2 robot (AIR/PRO/EDU models supported)
 - Network connection to the robot
 
 ## Installation
+
+### Option 1: Standard Installation (Recommended)
 
 1. **Clone the repository:**
    ```bash
@@ -39,10 +42,56 @@ A simple Model Context Protocol (MCP) server that enables natural language contr
    cd ..
    ```
 
+### Option 2: Conda Environment Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd unitree-go2-webrtc-mcp-server
+   ```
+
+2. **Run the automated setup script:**
+   ```bash
+   chmod +x setup.sh
+   ./setup.sh
+   ```
+
+   This will:
+   - Create a conda environment named `bff-mcp`
+   - Install all dependencies in the isolated environment
+   - Set up MCP configuration
+   - Test the installation
+
+3. **Activate the conda environment:**
+   ```bash
+   conda activate bff-mcp
+   ```
+
+### Option 3: Manual Conda Environment
+
+1. **Create conda environment:**
+   ```bash
+   conda env create -f environment.yml
+   ```
+
+2. **Activate the environment:**
+   ```bash
+   conda activate bff-mcp
+   ```
+
+3. **Install the WebRTC driver:**
+   ```bash
+   git clone --recurse-submodules https://github.com/legion1581/go2_webrtc_connect.git
+   cd go2_webrtc_connect
+   pip install -e .
+   cd ..
+   ```
+
 ## Configuration
 
 ### MCP Client Configuration
 
+#### Standard Python Installation
 Add the following to your MCP client configuration file (e.g., `mcp.json`):
 
 ```json
@@ -51,6 +100,29 @@ Add the following to your MCP client configuration file (e.g., `mcp.json`):
         "go2-webrtc": {
             "command": "python3",
             "args": [
+                "server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "."
+            }
+        }
+    }
+}
+```
+
+#### Conda Environment Installation
+If using the conda environment, use this configuration instead:
+
+```json
+{
+    "mcpServers": {
+        "go2-webrtc": {
+            "command": "conda",
+            "args": [
+                "run", 
+                "-n", 
+                "bff-mcp", 
+                "python", 
                 "server.py"
             ],
             "env": {
@@ -235,6 +307,7 @@ mcp dev server.py
 
 ### Running the Server
 
+#### Standard Python
 ```bash
 # Run as stdio MCP server
 python3 server.py
@@ -243,14 +316,67 @@ python3 server.py
 python3 server.py stdio
 ```
 
+#### Conda Environment
+```bash
+# Activate environment first
+conda activate bff-mcp
+
+# Run as stdio MCP server
+python server.py
+
+# Or with specific transport
+python server.py stdio
+```
+
 ### Testing
 
+#### Standard Python
 ```bash
 # Test installation
 python3 test_installation.py
 
+# Test FastMCP tools specifically
+python3 test_fastmcp.py
+
 # Run examples
 python3 example_usage.py
+```
+
+#### Conda Environment
+```bash
+# Activate environment first
+conda activate bff-mcp
+
+# Test installation
+python test_installation.py
+
+# Test FastMCP tools specifically
+python test_fastmcp.py
+
+# Run examples
+python example_usage.py
+```
+
+### Understanding FastMCP Tools
+
+The FastMCP server registers tools as Python functions that can be imported and called directly. Each tool function is decorated with `@mcp.tool()` and can be used in two ways:
+
+1. **As MCP tools** (when the server is running as an MCP server)
+2. **As Python functions** (when imported and called directly)
+
+#### Tool Functions Available:
+
+```python
+from server import (
+    connect, disconnect, jog, stand, sit, estop,
+    lowstate, multistate, front_photo, publish,
+    robot_status, execute_command
+)
+
+# Example usage:
+result = await connect(method="LocalSTA", ip="192.168.4.30")
+result = await robot_status()
+result = await execute_command("Move forward")
 ```
 
 ## Troubleshooting
@@ -261,10 +387,30 @@ python3 example_usage.py
 2. **Connection Failed**: Verify your robot is powered on and connected to the network
 3. **Permission Denied**: Ensure you have the necessary permissions to run Python scripts
 4. **FastMCP Error**: Make sure you have `mcp[cli]` installed
+5. **Conda Environment Issues**: Always activate the environment with `conda activate bff-mcp`
 
 ### Debug Mode
 
 The server includes comprehensive error handling and returns structured responses with `ok` and `error` fields for easy debugging.
+
+### Conda Environment Management
+
+```bash
+# List environments
+conda env list
+
+# Activate environment
+conda activate bff-mcp
+
+# Deactivate environment
+conda deactivate
+
+# Remove environment (if needed)
+conda env remove -n bff-mcp
+
+# Recreate environment
+conda env create -f environment.yml
+```
 
 ## Contributing
 

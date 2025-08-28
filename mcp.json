@@ -9,5 +9,23 @@
                 "PYTHONPATH": "."
             }
         }
+    },
+    "_comment": "Alternative conda environment configuration:",
+    "_conda_example": {
+        "mcpServers": {
+            "go2-webrtc": {
+                "command": "conda",
+                "args": [
+                    "run", 
+                    "-n", 
+                    "bff-mcp", 
+                    "python", 
+                    "server.py"
+                ],
+                "env": {
+                    "PYTHONPATH": "."
+                }
+            }
+        }
     }
 }

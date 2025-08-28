@@ -1,0 +1,10 @@
+name: bff-mcp
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - "mcp[cli]>=1.0.0"
+    - go2-webrtc-connect
