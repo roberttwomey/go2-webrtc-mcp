@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Unitree Go2 WebRTC MCP Server Setup Script
+# Unitree Go2 WebRTC MCP Server Setup Script (FastMCP)
 # This script automates the installation and setup process
 
 set -e
 
-echo "=== Unitree Go2 WebRTC MCP Server Setup ==="
+echo "=== Unitree Go2 WebRTC MCP Server Setup (FastMCP) ==="
 echo ""
 
 # Check if Python 3 is installed
@@ -53,9 +53,15 @@ mkdir -p "$MCP_CONFIG_DIR"
 cp mcp.json "$MCP_CONFIG_DIR/"
 
 echo ""
+echo "Testing installation..."
+
+# Test the installation
+python3 test_installation.py
+
+echo ""
 echo "=== Setup Complete! ==="
 echo ""
-echo "The MCP server has been installed and configured."
+echo "The FastMCP server has been installed and configured."
 echo ""
 echo "To use with Claude Desktop:"
 echo "1. Open Claude Desktop"
@@ -67,6 +73,10 @@ echo "python3 example_usage.py"
 echo ""
 echo "To run the MCP server:"
 echo "python3 server.py"
+echo ""
+echo "To test with MCP Inspector:"
+echo "pip install 'mcp[cli]'"
+echo "mcp dev server.py"
 echo ""
 echo "Configuration files are located at: $MCP_CONFIG_DIR"
 echo ""

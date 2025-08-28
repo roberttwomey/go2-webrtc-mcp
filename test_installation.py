@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify the installation of the Unitree Go2 WebRTC MCP Server
+Test script to verify the installation of the Unitree Go2 WebRTC MCP Server using FastMCP
 """
 
 import sys
@@ -36,10 +36,8 @@ def main():
     # Test MCP dependencies
     print("Testing MCP dependencies:")
     mcp_modules = [
-        "mcp.server",
-        "mcp.server.models", 
-        "mcp.server.stdio",
-        "mcp.types"
+        "mcp.server.fastmcp",
+        "mcp.server.stdio"
     ]
     
     mcp_success = True
@@ -51,7 +49,7 @@ def main():
     
     # Test WebRTC driver
     print("Testing WebRTC driver:")
-    webrtc_success = test_import("go2_webrtc_driver")
+    webrtc_success = test_import("go2_webrtc_driver.webrtc_driver")
     print()
     
     # Test local server
@@ -59,11 +57,29 @@ def main():
     local_success = test_import("server")
     print()
     
+    # Test FastMCP tools
+    print("Testing FastMCP tools:")
+    try:
+        from server import mcp
+        tools = list(mcp.tools.keys())
+        print(f"✓ FastMCP server created with {len(tools)} tools:")
+        for tool in tools:
+            print(f"  - {tool}")
+        fastmcp_success = True
+    except Exception as e:
+        print(f"✗ FastMCP tools failed: {e}")
+        fastmcp_success = False
+    
+    print()
+    
     # Summary
     print("=== Installation Test Summary ===")
-    if mcp_success and webrtc_success and local_success:
+    if mcp_success and webrtc_success and local_success and fastmcp_success:
         print("✓ All dependencies are properly installed!")
-        print("✓ The MCP server is ready to use!")
+        print("✓ The FastMCP server is ready to use!")
+        print("\nAvailable tools:")
+        for tool in tools:
+            print(f"  - {tool}")
         return True
     else:
         print("✗ Some dependencies are missing or failed to import")

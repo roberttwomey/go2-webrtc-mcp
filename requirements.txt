@@ -1,4 +1,2 @@
-mcp>=1.0.0
+mcp[cli]>=1.0.0
 go2-webrtc-connect
-asyncio
-typing-extensions
