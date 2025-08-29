@@ -219,6 +219,51 @@ class Go2WebRTCMCPServer:
                             },
                             "required": ["rate_hz"]
                         }
+                    ),
+                    Tool(
+                        name="sit_down",
+                        description="Make the robot sit down using SPORT_CMD SitDown",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
+                    ),
+                    Tool(
+                        name="liedown",
+                        description="Make the robot lie down using SPORT_CMD StandDown",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
+                    ),
+                    Tool(
+                        name="stand_up",
+                        description="Make the robot stand up using SPORT_CMD StandUp",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
+                    ),
+                    Tool(
+                        name="free_walk",
+                        description="Enable free walk mode using SPORT_CMD FreeWalk",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
+                    ),
+                    Tool(
+                        name="balance_stand",
+                        description="Make the robot enter balance stand mode using SPORT_CMD BalanceStand",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
                     )
                 ]
             )
@@ -247,6 +292,16 @@ class Go2WebRTCMCPServer:
                     return await self.test_movement(arguments)
                 elif name == "set_command_rate":
                     return await self.set_command_rate(arguments)
+                elif name == "sit_down":
+                    return await self.sit_down(arguments)
+                elif name == "liedown":
+                    return await self.liedown(arguments)
+                elif name == "stand_up":
+                    return await self.stand_up(arguments)
+                elif name == "free_walk":
+                    return await self.free_walk(arguments)
+                elif name == "balance_stand":
+                    return await self.balance_stand(arguments)
                 else:
                     return CallToolResult(
                         content=[TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -360,18 +415,20 @@ class Go2WebRTCMCPServer:
             )
         
         try:
-            x = args.get("x", 0.0)
-            y = args.get("y", 0.0)
-            z = args.get("z", 0.0)
+            x = float(args.get("x", 0.0))
+            y = float(args.get("y", 0.0))
+            z = float(args.get("z", 0.0))
             duration = args.get("duration", None)
+            if duration is not None:
+                duration = float(duration)
             
             # Ensure values are within valid range
-            # x = max(-1.0, min(1.0, float(x)))
-            # y = max(-1.0, min(1.0, float(y)))
-            # z = max(-1.0, min(1.0, float(z)))
+            x = max(-1.0, min(1.0, x))
+            y = max(-1.0, min(1.0, y))
+            z = max(-1.0, min(1.0, z))
             
-            # Update current movement
-            self.robot.current_movement = {'x': x, 'y': y, 'z': z}
+            # Update current movement with float values
+            self.robot.current_movement = {'x': float(x), 'y': float(y), 'z': float(z)}
             
             if duration:
                 # Single movement command with duration
@@ -410,10 +467,10 @@ class Go2WebRTCMCPServer:
                     pass
             
             self.robot.is_moving = False
-            self.robot.current_movement = {'x': 0, 'y': 0, 'z': 0}
+            self.robot.current_movement = {'x': 0.0, 'y': 0.0, 'z': 0.0}
             
             # Send stop command
-            await self._send_movement_command(0, 0, 0)
+            await self._send_movement_command(0.0, 0.0, 0.0)
             
             return CallToolResult(
                 content=[TextContent(type="text", text="Robot movement stopped")]
@@ -435,8 +492,8 @@ class Go2WebRTCMCPServer:
             mode = args.get("mode")
             
             # Stop current movement before switching modes
-            if self.robot.is_moving:
-                await self.stop_robot({})
+            # if self.robot.is_moving:
+            #     await self.stop_robot({})
             
             # Switch motion mode
             response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
@@ -546,22 +603,22 @@ class Go2WebRTCMCPServer:
         try:
             # Enhanced natural language command parsing
             if any(word in command for word in ["forward", "ahead", "straight", "go forward"]):
-                await self.move_robot({"x": 0.5, "y": 0, "z": 0})
+                await self.move_robot({"x": 0.5, "y": 0.0, "z": 0.0})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Moving the robot forward")]
                 )
             elif any(word in command for word in ["backward", "back", "reverse", "go back"]):
-                await self.move_robot({"x": -0.5, "y": 0, "z": 0})
+                await self.move_robot({"x": -0.5, "y": 0.0, "z": 0.0})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Moving the robot backward")]
                 )
             elif any(word in command for word in ["left", "turn left", "go left"]):
-                await self.move_robot({"x": 0, "y": 0, "z": 0.5})
+                await self.move_robot({"x": 0.0, "y": 0.0, "z": 0.5})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Turning the robot left")]
                 )
             elif any(word in command for word in ["right", "turn right", "go right"]):
-                await self.move_robot({"x": 0, "y": 0, "z": -0.5})
+                await self.move_robot({"x": 0.0, "y": 0.0, "z": -0.5})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Turning the robot right")]
                 )
@@ -570,23 +627,48 @@ class Go2WebRTCMCPServer:
                 return CallToolResult(
                     content=[TextContent(type="text", text="Stopping the robot")]
                 )
+            elif any(word in command for word in ["sit", "sit down", "sitdown"]):
+                await self.sit_down({})
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Making the robot sit down")]
+                )
+            elif any(word in command for word in ["lie down", "liedown", "lay down", "laydown"]):
+                await self.liedown({})
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Making the robot lie down")]
+                )
+            elif any(word in command for word in ["stand up", "standup", "get up", "rise"]):
+                await self.stand_up({})
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Making the robot stand up")]
+                )
+            elif any(word in command for word in ["free walk", "freewalk", "free walking"]):
+                await self.free_walk({})
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Enabling free walk mode")]
+                )
+            elif any(word in command for word in ["balance stand", "balancestand", "balance"]):
+                await self.balance_stand({})
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Entering balance stand mode")]
+                )
             elif any(word in command for word in ["dance", "spin", "rotate", "turn around"]):
                 # Enhanced dance sequence
-                await self.move_robot({"x": 0, "y": 0, "z": 0.8, "duration": 2.0})
+                await self.move_robot({"x": 0.0, "y": 0.0, "z": 0.8, "duration": 2.0})
                 await asyncio.sleep(2.0)
-                await self.move_robot({"x": 0, "y": 0, "z": -0.8, "duration": 2.0})
+                await self.move_robot({"x": 0.0, "y": 0.0, "z": -0.8, "duration": 2.0})
                 await asyncio.sleep(2.0)
-                await self.move_robot({"x": 0.3, "y": 0, "z": 0, "duration": 1.0})
+                await self.move_robot({"x": 0.3, "y": 0.0, "z": 0.0, "duration": 1.0})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Executed an enhanced dance sequence")]
                 )
             elif any(word in command for word in ["fast", "speed up", "run"]):
-                await self.move_robot({"x": 1.0, "y": 0, "z": 0})
+                await self.move_robot({"x": 1.0, "y": 0.0, "z": 0.0})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Moving the robot at high speed")]
                 )
             elif any(word in command for word in ["slow", "slow down", "gentle"]):
-                await self.move_robot({"x": 0.2, "y": 0, "z": 0})
+                await self.move_robot({"x": 0.2, "y": 0.0, "z": 0.0})
                 return CallToolResult(
                     content=[TextContent(type="text", text="Moving the robot slowly")]
                 )
@@ -630,18 +712,18 @@ class Go2WebRTCMCPServer:
             
             # Test forward movement
             result_messages.append("Testing forward movement...")
-            await self.move_robot({"x": 1.0, "y": 0, "z": 0, "duration": 2.0})
+            await self.move_robot({"x": 1.0, "y": 0.0, "z": 0.0, "duration": 2.0})
             
             # Test turning
             result_messages.append("Testing left turn...")
-            await self.move_robot({"x": 0, "y": 0, "z": 1.0, "duration": 2.0})
+            await self.move_robot({"x": 0.0, "y": 0.0, "z": 1.0, "duration": 2.0})
             
             result_messages.append("Testing right turn...")
-            await self.move_robot({"x": 0, "y": 0, "z": -1.0, "duration": 2.0})
+            await self.move_robot({"x": 0.0, "y": 0.0, "z": -1.0, "duration": 2.0})
             
             # Test combined movement
             result_messages.append("Testing combined movement (forward + turn)...")
-            await self.move_robot({"x": 1.0, "y": 0, "z": 0.5, "duration": 2.0})
+            await self.move_robot({"x": 1.0, "y": 0.0, "z": 0.5, "duration": 2.0})
             
             # Stop
             await self.stop_robot({})
@@ -672,6 +754,191 @@ class Go2WebRTCMCPServer:
             logger.error(f"Set command rate error: {e}")
             return CallToolResult(
                 content=[TextContent(type="text", text=f"Failed to set command rate: {str(e)}")]
+            )
+    
+    async def sit_down(self, args: Dict[str, Any]) -> CallToolResult:
+        """Make the robot sit down using SPORT_CMD SitDown"""
+        if not self.robot.is_connected:
+            return CallToolResult(
+                content=[TextContent(type="text", text="Error: Robot not connected. Please connect first.")]
+            )
+        
+        try:
+            response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
+                RTC_TOPIC["SPORT_MOD"],
+                {
+                    "api_id": SPORT_CMD["SitDown"],
+                    "parameter": {}
+                }
+            )
+            
+            if response and 'data' in response and 'header' in response['data']:
+                status = response['data']['header']['status']['code']
+                if status == 0:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text="Robot is sitting down.")]
+                    )
+                else:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=f"Failed to make robot sit down, status: {status}")]
+                    )
+            else:
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Invalid response from SitDown command")]
+                )
+                
+        except Exception as e:
+            logger.error(f"SitDown error: {e}")
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"SitDown failed: {str(e)}")]
+            )
+    
+    async def liedown(self, args: Dict[str, Any]) -> CallToolResult:
+        """Make the robot lie down using SPORT_CMD StandDown"""
+        if not self.robot.is_connected:
+            return CallToolResult(
+                content=[TextContent(type="text", text="Error: Robot not connected. Please connect first.")]
+            )
+        
+        try:
+            response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
+                RTC_TOPIC["SPORT_MOD"],
+                {
+                    "api_id": SPORT_CMD["StandDown"],
+                    "parameter": {}
+                }
+            )
+            
+            if response and 'data' in response and 'header' in response['data']:
+                status = response['data']['header']['status']['code']
+                if status == 0:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text="Robot is lying down.")]
+                    )
+                else:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=f"Failed to make robot lie down, status: {status}")]
+                    )
+            else:
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Invalid response from StandDown command")]
+                )
+                
+        except Exception as e:
+            logger.error(f"LieDown error: {e}")
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"LieDown failed: {str(e)}")]
+            )
+    
+    async def stand_up(self, args: Dict[str, Any]) -> CallToolResult:
+        """Make the robot stand up using SPORT_CMD StandUp"""
+        if not self.robot.is_connected:
+            return CallToolResult(
+                content=[TextContent(type="text", text="Error: Robot not connected. Please connect first.")]
+            )
+        
+        try:
+            response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
+                RTC_TOPIC["SPORT_MOD"],
+                {
+                    "api_id": SPORT_CMD["StandUp"],
+                    "parameter": {}
+                }
+            )
+            
+            if response and 'data' in response and 'header' in response['data']:
+                status = response['data']['header']['status']['code']
+                if status == 0:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text="Robot is standing up.")]
+                    )
+                else:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=f"Failed to make robot stand up, status: {status}")]
+                    )
+            else:
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Invalid response from StandUp command")]
+                )
+                
+        except Exception as e:
+            logger.error(f"StandUp error: {e}")
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"StandUp failed: {str(e)}")]
+            )
+    
+    async def free_walk(self, args: Dict[str, Any]) -> CallToolResult:
+        """Enable free walk mode using SPORT_CMD FreeWalk"""
+        if not self.robot.is_connected:
+            return CallToolResult(
+                content=[TextContent(type="text", text="Error: Robot not connected. Please connect first.")]
+            )
+        
+        try:
+            response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
+                RTC_TOPIC["SPORT_MOD"],
+                {
+                    "api_id": SPORT_CMD["FreeWalk"],
+                    "parameter": {}
+                }
+            )
+            
+            if response and 'data' in response and 'header' in response['data']:
+                status = response['data']['header']['status']['code']
+                if status == 0:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text="Free walk mode enabled.")]
+                    )
+                else:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=f"Failed to enable free walk mode, status: {status}")]
+                    )
+            else:
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Invalid response from FreeWalk command")]
+                )
+                
+        except Exception as e:
+            logger.error(f"FreeWalk error: {e}")
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"FreeWalk failed: {str(e)}")]
+            )
+    
+    async def balance_stand(self, args: Dict[str, Any]) -> CallToolResult:
+        """Make the robot enter balance stand mode using SPORT_CMD BalanceStand"""
+        if not self.robot.is_connected:
+            return CallToolResult(
+                content=[TextContent(type="text", text="Error: Robot not connected. Please connect first.")]
+            )
+        
+        try:
+            response = await self.robot.connection.datachannel.pub_sub.publish_request_new(
+                RTC_TOPIC["SPORT_MOD"],
+                {
+                    "api_id": SPORT_CMD["BalanceStand"],
+                    "parameter": {}
+                }
+            )
+            
+            if response and 'data' in response and 'header' in response['data']:
+                status = response['data']['header']['status']['code']
+                if status == 0:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text="Robot is in balance stand mode.")]
+                    )
+                else:
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=f"Failed to enter balance stand mode, status: {status}")]
+                    )
+            else:
+                return CallToolResult(
+                    content=[TextContent(type="text", text="Invalid response from BalanceStand command")]
+                )
+                
+        except Exception as e:
+            logger.error(f"BalanceStand error: {e}")
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"BalanceStand failed: {str(e)}")]
             )
     
     async def _send_movement_command(self, x: float, y: float, z: float):
@@ -705,9 +972,9 @@ class Go2WebRTCMCPServer:
                     abs(self.robot.current_movement['z']) > 0.01):
                     
                     await self._send_movement_command(
-                        self.robot.current_movement['x'],
-                        self.robot.current_movement['y'], 
-                        self.robot.current_movement['z']
+                        float(self.robot.current_movement['x']),
+                        float(self.robot.current_movement['y']), 
+                        float(self.robot.current_movement['z'])
                     )
                 
                 # Send commands at regular intervals

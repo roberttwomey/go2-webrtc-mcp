@@ -31,6 +31,27 @@ async def example_usage():
     print(f"Status: {result.content[0].text}\n")
     await asyncio.sleep(3)
 
+
+    # Example 2: Check robot status
+    print("3. Stand up ...")
+    result = await server.stand_up({})
+    print(f"Status: {result.content[0].text}\n")
+    await asyncio.sleep(3)
+
+        # Example 2: Check robot status
+    print("3. Command robot to balance stand ...")
+    result = await server.balance_stand({})
+    print(f"Status: {result.content[0].text}\n")
+    await asyncio.sleep(3)
+
+    # Start movement mode mcf
+    print("3. Start movement mode mcf...")
+    result = await server.switch_motion_mode({
+        "mode": "mcf"
+    })
+    print(f"Result: {result.content[0].text}\n")
+    await asyncio.sleep(3)
+
     # Example 3: Move robot forward
     print("3. Moving robot forward...")
     result = await server.move_robot({
@@ -47,6 +68,17 @@ async def example_usage():
     })
     print(f"Result: {result.content[0].text}\n")
     await asyncio.sleep(3)
+
+    result = await server.stop_robot({})
+    print(f"Result: {result.content[0].text}\n")
+    await asyncio.sleep(3)
+
+    # # Example 5: Lie down
+    # print("5. Lie down...")
+    # result = await server.liedown({})
+    # print(f"Result: {result.content[0].text}\n")
+    # await asyncio.sleep(3)
+
     # Example 5: Disconnect from robot
     print("5. Disconnecting from robot...")
     result = await server.disconnect_robot({})
