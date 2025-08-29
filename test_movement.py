@@ -17,7 +17,7 @@ async def test_movement():
     
     try:
         # Import after path setup
-        from server import connect, jog, stand, sit, disconnect, liedown
+        from server import connect, jog, stand, balance_stand, sit, disconnect, liedown
         
         # Connect to robot
         print("1. Connecting to robot...")
@@ -32,14 +32,19 @@ async def test_movement():
         result = await stand()
         print(f"Stand result: {result}")
         await asyncio.sleep(3)
+
+        print("\n2. Balanced stand (ready to go)...")
+        result = await balance_stand()
+        print(f"Balance stand result: {result}")
+        await asyncio.sleep(2)
         
         print("\n3. Testing forward movement...")
-        result = await jog(lx=2.0, ly=0.0, yaw=0.0, duration_s=2.0)
+        result = await jog(lx=0.5, ly=0.0, yaw=0.0, duration_s=2.0)
         print(f"Forward movement result: {result}")
         await asyncio.sleep(3)
         
         print("\n4. Testing turn...")
-        result = await jog(lx=0.0, ly=0.0, yaw=1.5, duration_s=2.0)
+        result = await jog(lx=0.0, ly=0.0, yaw=0.5, duration_s=2.0)
         print(f"Turn result: {result}")
         await asyncio.sleep(3)
         

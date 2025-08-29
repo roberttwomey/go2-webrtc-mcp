@@ -7,7 +7,7 @@ This script demonstrates how to use the server programmatically.
 import asyncio
 import json
 from server import (
-    mcp, state, connect, disconnect, jog, stand, sit, estop, 
+    mcp, state, connect, disconnect, jog, stand, balance_stand, sit, estop, 
     lowstate, multistate, front_photo, publish, robot_status, execute_command,
     # New wireless controller tools
     wireless_controller_publish, stand_up_from_fall, stretch,
@@ -38,6 +38,12 @@ async def example_usage():
     # Example 3: Stand up
     print("3. Standing up robot...")
     result = await stand()
+    print(f"Result: {result}\n")
+    await asyncio.sleep(2)  # Longer pause after stand command
+    
+    # Example 4: Balance stand
+    print("4. Balancing robot...")
+    result = await balance_stand()
     print(f"Result: {result}\n")
     await asyncio.sleep(2)  # Longer pause after stand command
     

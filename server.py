@@ -784,6 +784,19 @@ async def stop() -> dict:
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+@mcp.tool()
+async def balance_stand() -> dict:
+    """Enter balance stand mode."""
+    try:
+        # Ensure MCF mode is active
+        await switch_to_mcf_mode()
+        
+        # Use SPORT_MOD topic with BalanceStand command
+        result = await send_sport_command(SPORT_CMD["BalanceStand"])
+        return {"ok": result.get("ok", False), "topic": "SPORT_MOD", "response": result.get("response")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 if __name__ == "__main__":
     # Run as a stdio MCP server (works with Inspector / Claude Desktop / Cursor).
     stdio_server.run(mcp)
