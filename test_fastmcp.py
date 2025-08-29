@@ -16,7 +16,11 @@ async def test_fastmcp_tools():
         from server import (
             mcp, state, connect, disconnect, jog, stand, sit, 
             estop, lowstate, multistate, front_photo, publish, 
-            robot_status, execute_command
+            robot_status, execute_command,
+            # New wireless controller tools
+            wireless_controller_publish, stand_up_from_fall, stretch,
+            shake_hands, love, pounce, jump_forward, sit_down,
+            greet, dance, stop_movement
         )
         
         print("✓ Successfully imported all FastMCP tools")
@@ -24,14 +28,27 @@ async def test_fastmcp_tools():
         print(f"✓ Robot state: {state}")
         
         # Test that tools are callable
-        tools = [
+        basic_tools = [
             connect, disconnect, jog, stand, sit, estop, 
             lowstate, multistate, front_photo, publish, 
             robot_status, execute_command
         ]
         
-        print(f"\n✓ Found {len(tools)} MCP tools:")
-        for tool in tools:
+        wireless_tools = [
+            wireless_controller_publish, stand_up_from_fall, stretch,
+            shake_hands, love, pounce, jump_forward, sit_down,
+            greet, dance, stop_movement
+        ]
+        
+        all_tools = basic_tools + wireless_tools
+        
+        print(f"\n✓ Found {len(all_tools)} MCP tools:")
+        print("\nBasic Tools:")
+        for tool in basic_tools:
+            print(f"  - {tool.__name__}: {callable(tool)}")
+        
+        print("\nWireless Controller Tools:")
+        for tool in wireless_tools:
             print(f"  - {tool.__name__}: {callable(tool)}")
         
         # Test robot_status (should work without connection)

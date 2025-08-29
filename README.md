@@ -155,7 +155,9 @@ The server supports three connection methods:
 
 The FastMCP server provides the following tools:
 
-#### 1. `connect`
+#### Basic Control Tools
+
+##### 1. `connect`
 Connect to a Go2 robot using WebRTC.
 
 **Parameters:**
@@ -173,10 +175,10 @@ Connect to a Go2 robot using WebRTC.
 }
 ```
 
-#### 2. `disconnect`
+##### 2. `disconnect`
 Disconnect from the currently connected robot.
 
-#### 3. `jog`
+##### 3. `jog`
 Move the robot with velocity control.
 
 **Parameters:**
@@ -194,31 +196,31 @@ Move the robot with velocity control.
 }
 ```
 
-#### 4. `stand`
+##### 4. `stand`
 Stand up/enable motors.
 
-#### 5. `sit`
+##### 5. `sit`
 Sit down/disable motors.
 
-#### 6. `estop`
+##### 6. `estop`
 Emergency stop.
 
-#### 7. `lowstate`
+##### 7. `lowstate`
 Get cached low-level state from the robot.
 
-#### 8. `multistate`
+##### 8. `multistate`
 Get cached multi-state (brightness, bodyHeight, etc.).
 
-#### 9. `front_photo`
+##### 9. `front_photo`
 Request a front-camera photo.
 
-#### 10. `publish`
+##### 10. `publish`
 Raw passthrough to any WebRTC API topic.
 
-#### 11. `robot_status`
+##### 11. `robot_status`
 Get the current status of the Go2 robot.
 
-#### 12. `execute_command`
+##### 12. `execute_command`
 Execute natural language commands.
 
 **Parameters:**
@@ -230,6 +232,63 @@ Execute natural language commands.
     "command": "Move the robot forward"
 }
 ```
+
+#### Wireless Controller Tools (ROS2 Compatibility)
+
+These tools replicate the functionality from the reference [unitree-go2-mcp-server](https://github.com/lpigeon/unitree-go2-mcp-server) repository, adapted from ROS2 to WebRTC:
+
+##### 13. `wireless_controller_publish`
+Publish wireless controller message via WebRTC (adapted from ROS2).
+
+**Parameters:**
+- `lx` (optional): Left stick X axis (-1 ~ 1) -> robot move left and right
+- `ly` (optional): Left stick Y axis (-1 ~ 1) -> robot move forward and backward
+- `rx` (optional): Right stick X axis (-1 ~ 1) -> robot rotate left and right
+- `ry` (optional): Right stick Y axis (-1 ~ 1) -> robot rotate up and down
+- `keys` (optional): Button state
+- `duration` (optional): Movement duration in seconds
+
+**Example:**
+```json
+{
+    "lx": 0.0,
+    "ly": 0.5,
+    "rx": 0.0,
+    "ry": 0.0,
+    "keys": 0,
+    "duration": 2.0
+}
+```
+
+##### 14. `stand_up_from_fall`
+Stand up from a fall position.
+
+##### 15. `stretch`
+Execute stretch movement.
+
+##### 16. `shake_hands`
+Execute shake hands movement.
+
+##### 17. `love`
+Execute love movement.
+
+##### 18. `pounce`
+Execute pounce movement.
+
+##### 19. `jump_forward`
+Execute jump forward movement.
+
+##### 20. `sit_down`
+Execute sit down movement.
+
+##### 21. `greet`
+Execute greet movement.
+
+##### 22. `dance`
+Execute dance movement.
+
+##### 23. `stop_movement`
+Stop all movement.
 
 ### Natural Language Commands
 
@@ -388,6 +447,42 @@ result = await execute_command("Move forward")
 3. **Permission Denied**: Ensure you have the necessary permissions to run Python scripts
 4. **FastMCP Error**: Make sure you have `mcp[cli]` installed
 5. **Conda Environment Issues**: Always activate the environment with `conda activate bff-mcp`
+
+### Driver Method Errors
+
+If you encounter errors like:
+```
+'Driver has no compatible send/publish method'
+```
+
+This means the `go2_webrtc_connect` driver has different method names than expected. Here's how to fix it:
+
+#### Step 1: Install/Reinstall the Driver
+```bash
+# Run the automated installer
+python3 install_driver.py
+
+# Or manually:
+git clone --recurse-submodules https://github.com/legion1581/go2_webrtc_connect.git
+cd go2_webrtc_connect
+pip install -e .
+cd ..
+```
+
+#### Step 2: Debug the Driver
+```bash
+# Check what methods are available
+python3 debug_driver.py
+```
+
+#### Step 3: Update Method Names (if needed)
+If the debug shows different method names, you may need to update the server code. Common alternatives:
+- `send_api_request` → `send`
+- `send_api_request` → `publish`
+- `send_api_request` → `api_request`
+
+#### Step 4: Check Driver Version
+Different versions of the driver may have different APIs. Check the [go2_webrtc_connect repository](https://github.com/legion1581/go2_webrtc_connect) for the latest documentation.
 
 ### Debug Mode
 

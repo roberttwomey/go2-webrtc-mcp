@@ -75,10 +75,35 @@ def main():
         # Filter out common Python functions and keep likely MCP tools
         mcp_tools = [f for f in tool_functions if f not in ['main', 'test_installation', 'example_usage']]
         
+        # Categorize tools
+        basic_tools = [
+            'connect', 'disconnect', 'jog', 'stand', 'sit', 'estop',
+            'lowstate', 'multistate', 'front_photo', 'publish',
+            'robot_status', 'execute_command'
+        ]
+        
+        wireless_tools = [
+            'wireless_controller_publish', 'stand_up_from_fall', 'stretch',
+            'shake_hands', 'love', 'pounce', 'jump_forward', 'sit_down',
+            'greet', 'dance', 'stop_movement'
+        ]
+        
         print(f"✓ FastMCP server created successfully")
-        print(f"✓ Found {len(mcp_tools)} potential MCP tools:")
-        for tool in mcp_tools:
-            print(f"  - {tool}")
+        print(f"✓ Found {len(mcp_tools)} total MCP tools:")
+        
+        print(f"\nBasic Control Tools ({len(basic_tools)}):")
+        for tool in basic_tools:
+            if tool in mcp_tools:
+                print(f"  ✓ {tool}")
+            else:
+                print(f"  ✗ {tool} (missing)")
+        
+        print(f"\nWireless Controller Tools ({len(wireless_tools)}):")
+        for tool in wireless_tools:
+            if tool in mcp_tools:
+                print(f"  ✓ {tool}")
+            else:
+                print(f"  ✗ {tool} (missing)")
         
         # Test if the FastMCP object has the expected structure
         if hasattr(mcp, '_tools') or hasattr(mcp, 'tools'):
@@ -99,9 +124,9 @@ def main():
     if mcp_success and webrtc_success and local_success and fastmcp_success:
         print("✓ All dependencies are properly installed!")
         print("✓ The FastMCP server is ready to use!")
-        print("\nAvailable tools:")
-        for tool in mcp_tools:
-            print(f"  - {tool}")
+        print(f"\nTotal MCP tools available: {len(mcp_tools)}")
+        print(f"Basic control tools: {len(basic_tools)}")
+        print(f"Wireless controller tools: {len(wireless_tools)}")
         return True
     else:
         print("✗ Some dependencies are missing or failed to import")
